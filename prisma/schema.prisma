@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+    provider = "prisma-client"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "mysql"
+}
+
+model Grado {
+    idgrado     Int       @id @default(autoincrement())
+    nombre      String    @unique @db.VarChar(50)
+    descripcion String?   @db.VarChar(255)
+    secciones   Seccion[]
+    creadoEn    DateTime  @default(now())
+}
+
+model Seccion {
+    idseccion Int      @id @default(autoincrement())
+    nombre    String   @db.VarChar(50)
+    idgrado   Int
+    grado     Grado    @relation(fields: [idgrado], references: [idgrado])
+    alumnos   Alumno[]
+    creadoEn  DateTime @default(now())
+
+    @@index([idgrado])
+}
+
+model Alumno {
+    idalumno        Int         @id @default(autoincrement())
+    matricula       String      @unique @db.VarChar(30)
+    nombres         String      @db.VarChar(100)
+    apellidos       String      @db.VarChar(100)
+    fechaNacimiento DateTime?   @db.Date
+    sexo            String?     @db.VarChar(20)
+    edad            Int?        @db.Int
+    telefono        String?     @db.VarChar(10)
+    idseccion       Int
+    seccion         Seccion     @relation(fields: [idseccion], references: [idseccion])
+    expediente      Expediente?
+    activo          Boolean     @default(true)
+    creadoEn        DateTime    @default(now())
+
+    @@index([idseccion])
+}
+
+model Expediente {
+    idexpediente  Int         @id @default(autoincrement())
+    idalumno      Int         @unique
+    alumno        Alumno      @relation(fields: [idalumno], references: [idalumno])
+    observaciones String?     @db.Text
+    medicas       Medica[]
+    nutriciones   Nutricion[]
+    opticas       Optica[]
+    creadoEn      DateTime    @default(now())
+}
+
+model Medica {
+    idmedica        Int        @id @default(autoincrement())
+    idexpediente    Int
+    expediente      Expediente @relation(fields: [idexpediente], references: [idexpediente])
+    TA              String?    @db.VarChar(20)
+    TC              String?    @db.VarChar(20)
+    Fr              String?    @db.VarChar(20)
+    FC              String?    @db.VarChar(20)
+    Po2             String?    @db.VarChar(20)
+    oidoSimetrico   Boolean?
+    oidoColoracion  Boolean?
+    recomendaciones String?    @db.Text
+    observaciones   String?    @db.Text
+    creadoEn        DateTime   @default(now())
+
+    @@index([idexpediente, creadoEn])
+}
+
+model Nutricion {
+    idnutricion         Int         @id @default(autoincrement())
+    idexpediente        Int
+    expediente          Expediente  @relation(fields: [idexpediente], references: [idexpediente])
+    peso                Decimal?    @db.Decimal(5, 2)
+    talla               Decimal?    @db.Decimal(5, 2)
+    imc                 Decimal?    @db.Decimal(5, 2)
+    perimetroCefalico   Decimal?    @db.Decimal(5, 2)
+    imcParaEdad             String?     @db.Text
+    pesoParaEdad            String?     @db.Text
+    tallaParaEdad           String?     @db.Text
+    pesoParaTalla           String?     @db.Text
+    perimetroParaEdad       String?     @db.Text
+    calificacion        String?     @db.Text
+    recomendaciones     String?     @db.Text
+    observaciones       String?     @db.Text
+    creadoEn            DateTime    @default(now())
+
+    @@index([idexpediente, creadoEn])
+}
+
+model Optica {
+    idoptica      Int        @id @default(autoincrement())
+    idexpediente  Int
+    expediente    Expediente @relation(fields: [idexpediente], references: [idexpediente])
+    OD            String?    @db.VarChar(100)
+    OI            String?    @db.VarChar(100)
+    AO            String?    @db.VarChar(100)
+    observaciones String?    @db.Text
+    optometrista  String?    @db.VarChar(150)
+    creadoEn      DateTime   @default(now())
+
+    @@index([idexpediente, creadoEn])
+}
